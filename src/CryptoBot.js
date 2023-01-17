@@ -7,10 +7,15 @@ export default class CryptoBot {
     constructor () {
         this.config = config;
         this.client = binanceClient;
+
+        this.assetTicker = config.assetTicker;
+        this.baseTicker = config.baseTicker;
+
+        this.assetName = config.assetName;
+        this.baseName = config.baseName;
+
         this.spread = config.spread;
-        this.base = config.base;
         this.allocation = config.allocation;
-        this.asset = config.asset;
         this.market = `${config.asset}/${config.base}`;  // BTC/USDT
     }
 
@@ -37,11 +42,11 @@ export default class CryptoBot {
 
     async getMarketPrice() {
         const averagePrices = await Promise.all([
-            axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd'),
-            axios.get('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd')
+            axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${this.assetName}&vs_currencies=usd`),
+            axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${this.baseName}&vs_currencies=usd`)
         ]);
     
-        return averagePrices[0].data.bitcoin.usd / averagePrices[1].data.tether.usd;
+        return averagePrices[0].data[this.assetName].usd / averagePrices[1].data[this.baseName].usd;
     }
 
     async getSellPrice() {
@@ -61,8 +66,8 @@ export default class CryptoBot {
     async getBalances() {
         const balances = await this.client.fetchBalance();
 
-        const assetBalance = balances.free[this.asset];
-        const baseBalance = balances.free[this.base];
+        const assetBalance = balances.free[this.assetTicker];
+        const baseBalance = balances.free[this.baseTicker];
 
         return [assetBalance, baseBalance];
     }
@@ -79,7 +84,7 @@ export default class CryptoBot {
 
         orders.forEach(order => {
             this.client.cancelOrder(order.id);
-        })
+        });
     }
 
     async initTrade() {

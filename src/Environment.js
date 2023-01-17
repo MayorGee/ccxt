@@ -10,12 +10,20 @@ export default class Environment {
         return process.env.API_SECRET_KEY;
     }
 
-    static getAsset() {
-        return process.env.ASSET;
+    static getAssetTicker() {
+        return process.env.ASSET_TICKER;
     }
 
-    static getBase() {
-        return process.env.BASE;
+    static getAssetName() {
+        return process.env.ASSET_NAME;
+    }
+
+    static getBaseTicker() {
+        return process.env.BASE_TICKER;
+    }
+
+    static getBaseName() {
+        return process.env.BASE_NAME;
     }
 
     static getAllocation() {
@@ -28,5 +36,13 @@ export default class Environment {
 
     static getTickInterval() {
         return process.env.TICK_INTERVAL;
+    }
+
+    static getBotToken() {
+        return process.env.BOT_TOKEN;
+    }
+
+    static getChatId() {
+        return process.env.CHAT_ID;
     }
 }
