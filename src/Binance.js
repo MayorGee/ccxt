@@ -3,7 +3,7 @@ import axios from 'axios';
 import { config } from './config/config.js';
 import { binanceClient } from './config/binanceClient.js';
 
-export default class CryptoBot {
+export default class Binance {
     constructor () {
         this.config = config;
         this.client = binanceClient;

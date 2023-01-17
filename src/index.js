@@ -1,8 +1,8 @@
-import CryptoBot from './CryptoBot.js';
+import Binance from './Binance.js';
 import Telegram from './Telegram.js';
 
-const cryptoBot = new CryptoBot();
+const binance = new Binance();
 const telegram = new Telegram();
 
-// cryptoBot.initTrade();
+// binance.initTrade();
 telegram.initBot();
