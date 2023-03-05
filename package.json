@@ -14,6 +14,7 @@
     "axios": "^1.2.1",
     "ccxt": "^2.4.58",
     "dotenv": "^16.0.3",
+    "fib-retracement": "^0.2.1",
     "node-telegram-bot-api": "^0.61.0"
   }
 }

@@ -45,10 +45,10 @@ export default class Telegram {
                     
                     break;
 
-                default:
-                    this.bot.sendMessage(this.chatId, `I don't understand this, check for any typo and try again please`);
+                // default:
+                //     this.bot.sendMessage(this.chatId, `I don't understand this, check for any typo and try again please`);
                     
-                    break;
+                //     break;
             }
         });
 
