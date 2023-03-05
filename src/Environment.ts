@@ -2,47 +2,47 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default class Environment {
-    static getApiKey() {
+    static getApiKey(): string | undefined {
         return process.env.API_KEY;
     }
 
-    static getApiSecretKey() {
+    static getApiSecretKey(): string | undefined {
         return process.env.API_SECRET_KEY;
     }
 
-    static getAssetTicker() {
+    static getAssetTicker(): string | undefined {
         return process.env.ASSET_TICKER;
     }
 
-    static getAssetName() {
+    static getAssetName(): string | undefined {
         return process.env.ASSET_NAME;
     }
 
-    static getBaseTicker() {
+    static getBaseTicker(): string | undefined {
         return process.env.BASE_TICKER;
     }
 
-    static getBaseName() {
+    static getBaseName(): string | undefined {
         return process.env.BASE_NAME;
     }
 
-    static getAllocation() {
+    static getAllocation(): string | undefined {
         return process.env.ALLOCATION;
     }
 
-    static getSpread() {
+    static getSpread(): string | undefined {
         return process.env.SPREAD;
     }
 
-    static getTickInterval() {
+    static getTickInterval(): string | undefined {
         return process.env.TICK_INTERVAL;
     }
 
-    static getBotToken() {
+    static getBotToken(): string | undefined {
         return process.env.BOT_TOKEN;
     }
 
-    static getChatId() {
+    static getChatId(): string | undefined {
         return process.env.CHAT_ID;
     }
 }

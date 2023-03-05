@@ -2,11 +2,23 @@ import axios from 'axios';
 
 import { config } from './config/config.js';
 import { binanceClient } from './config/binanceClient.js';
+import { Balance, Balances, binance } from 'ccxt';
 
 export default class Binance {
+    private client: binance;
+    private tickInterval: string;
+    private assetTicker: string;
+    private baseTicker: string;
+    private assetName: string;
+    private baseName: string;
+    private spread: string;
+    private allocation: string;
+    private market: string;
+    
     constructor () {
-        this.config = config;
+        this.tickInterval = config.tickInterval;
         this.client = binanceClient;
+        // this.client.verbose = true;
 
         this.assetTicker = config.assetTicker;
         this.baseTicker = config.baseTicker;
@@ -16,22 +28,29 @@ export default class Binance {
 
         this.spread = config.spread;
         this.allocation = config.allocation;
-        this.market = `${config.asset}/${config.base}`;  // BTC/USDT
+        this.market = `${this.assetTicker}/${this.baseTicker}`;  // BTC/USDT
     }
-
+    
     async createOrders() {
         await this.cancelAllOrders();
    
         const marketPrice = await this.getMarketPrice();
     
-        const sellPrice = this.getSellPrice();
-        const buyPrice = this.getBuyPrice();
+        const sellPrice = await this.getSellPrice();
+        const buyPrice = await this.getBuyPrice();
         
         const [ assetBalance, baseBalance ] = await this.getBalances();
+
+        console.log(`
+            Free Balances:
+                Asset Balance -  ${assetBalance.free}
+                Base Balance -  ${baseBalance.free}
+        `)
+
         const [ sellVolume, buyVolume ] = this.getVolumes(assetBalance, baseBalance, marketPrice);
     
-        await this.client.createLimitSellOrder(this.market, sellVolume, sellPrice);
-        await this.client.createLimitBuyOrder(this.market, buyVolume, buyPrice);
+        // await this.client.createLimitSellOrder(this.market, sellVolume, sellPrice);
+        // await this.client.createLimitBuyOrder(this.market, buyVolume, buyPrice);
      
         console.log(`
             New tick for ${this.market}...
@@ -51,30 +70,33 @@ export default class Binance {
 
     async getSellPrice() {
         const marketPrice = await this.getMarketPrice();
-        const sellPrice = marketPrice * (1 + this.spread);
+        const sellPrice = marketPrice * (1 + Number(this.spread));
 
         return sellPrice;
     }
 
     async getBuyPrice() {
         const marketPrice = await this.getMarketPrice();
-        const buyPrice = marketPrice * (1 - this.spread);
+        const buyPrice = marketPrice * (1 - Number(this.spread));
 
         return buyPrice;
     }
 
     async getBalances() {
-        const balances = await this.client.fetchBalance();
+        const balances: Balances = await this.client.fetchBalance();
 
-        const assetBalance = balances.free[this.assetTicker];
-        const baseBalance = balances.free[this.baseTicker];
+        const assetBalance = balances[this.assetTicker];
+        const baseBalance = balances[this.baseTicker];
+
+        console.log('Asset -', assetBalance)
+        console.log('Base -', baseBalance)
 
         return [assetBalance, baseBalance];
     }
 
-    getVolumes(assetBalance, baseBalance, marketPrice) {
-        const sellVolume = assetBalance * this.allocation;
-        const buyVolume = (baseBalance * this.allocation) / marketPrice;
+    getVolumes(assetBalance: Balance, baseBalance: Balance, marketPrice: number) {
+        const sellVolume = assetBalance.free * Number(this.allocation);
+        const buyVolume = (baseBalance.free * Number(this.allocation)) / marketPrice;
 
         return [sellVolume, buyVolume];
     }
@@ -90,9 +112,9 @@ export default class Binance {
     async initTrade() {
         await this.createOrders();
 
-        setInterval(
-            this.createOrders, 
-            this.config.tickInterval
-        );
+        // setInterval(
+        //     this.createOrders, 
+        //     Number(this.tickInterval)
+        // );
     }
 }

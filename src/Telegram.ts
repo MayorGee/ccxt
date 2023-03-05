@@ -4,14 +4,14 @@ import TelegramBot from 'node-telegram-bot-api';
 import Environment from './Environment.js'; 
 
 export default class Telegram {
-    bot;
-    token;
-    chatId;
+    private bot: TelegramBot;
+    private token: string;
+    private chatId;
 
     constructor() {
-        this.token = Environment.getBotToken();
+        this.token = Environment.getBotToken() as string;
         this.bot = new TelegramBot(this.token, { polling: true });
-        this.chatId = Environment.getChatId();
+        this.chatId = Environment.getChatId() as string;
     }
 
     initBot() {
@@ -22,21 +22,36 @@ export default class Telegram {
                         this.chatId, 
                         'Hello! I am AgbaCryptoBot, what can I do for you today?',
                         {
-                            'reply_markup': {
+                            reply_markup: {
                                 'keyboard': [
                                     [
-                                        '/price', 
-                                        '/trade'
+                                        {
+                                            text: '/updateLater'
+                                        },                                        
+                                        {
+                                            text: '/trade'
+                                        }
                                     ],   
-                                    ['/performance'],
                                     [
-                                        '/table',
-                                        '/balance',
-                                        '/blyat'
+                                        {
+                                            text: '/performance'
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            text: '/table'
+                                        },
+                                        {
+                                            text: '/balance'
+                                        },
+                                        {
+                                            text: '/blyat'
+                                        }
                                     ]
                                 ]
                             }
-                        });
+                        }
+                    );
 
                     break;
 
@@ -55,17 +70,22 @@ export default class Telegram {
         // Matches '/price [symbol]'
         this.bot.onText(/\/price (.+)/, async (message, data) => {
             try {
-                let ticker = data[1];
-                const price = await this.getCurrencyPrice(ticker);
-            
-                this.bot.sendMessage(this.chatId, price);
+                if(data) {
+                    let ticker = data[1];
+                    const price = await this.getCurrencyPrice(ticker);
+                
+                    this.bot.sendMessage(this.chatId, price);
+                } else {
+                    this.bot.sendMessage(this.chatId, 'Error getting data');
+                }
+
             } catch (error) {
                 this.bot.sendMessage(this.chatId, 'Error getting crypto price!, check for typos and try again please');
             }
         });
     }
 
-    async getCurrencyPrice(ticker) {
+    async getCurrencyPrice(ticker: string) {
         const price = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${ticker}&vs_currencies=usd`);
 
         return price.data[ticker].usd;

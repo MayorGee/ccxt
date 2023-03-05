@@ -4,7 +4,7 @@ import { SMA } from 'technicalindicators';
 export default class Indicator {
     // https://www.npmjs.com/package/technicalindicators
 
-    getFibonacciRetracement(start, end) {
+    getFibonacciRetracement(start: number, end: number) {
         /*
             if start is 0 and end is 10:
                 getFibRetracement = {
@@ -27,9 +27,7 @@ export default class Indicator {
         return levels; 
     }
 
-    getSimpleMovingAverages(period, values) {
-        // peried: Number
-        // values: Number[]
+    getSimpleMovingAverages(period: number, values: number[]) {
         return SMA.calculate({ period, values });
     }
 }
