@@ -15,6 +15,7 @@
     "ccxt": "^2.4.58",
     "dotenv": "^16.0.3",
     "fib-retracement": "^0.2.1",
-    "node-telegram-bot-api": "^0.61.0"
+    "node-telegram-bot-api": "^0.61.0",
+    "technicalindicators": "^3.1.0"
   }
 }
