@@ -8,6 +8,7 @@ export const config = {
     baseName : Environment.getBaseName() as string,
     
     allocation: Environment.getAllocation() as string,
-    spread: Environment.getSpread() as string,
-    tickInterval: Environment.getTickInterval() as string
+    stopLoss: Environment.getStopLoss() as string,
+    tickInterval: Environment.getTickInterval() as string,
+    tradePositionRange: Environment.getTradePositionRange() as string
 };

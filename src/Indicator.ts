@@ -1,10 +1,11 @@
 import { getFibRetracement, levels } from 'fib-retracement';
 import { SMA } from 'technicalindicators';
+import { IFibonacci } from './types';
 
 export default class Indicator {
     // https://www.npmjs.com/package/technicalindicators
 
-    getFibonacciRetracement(start: number, end: number) {
+    getFibonacciRetracement(start: number, end: number): IFibonacci {
         /*
             if start is 0 and end is 10:
                 getFibRetracement = {
@@ -21,13 +22,13 @@ export default class Indicator {
         return getFibRetracement(start, end);         
     }
 
-    getFibonacciLevels() {
+    getFibonacciLevels(): number[] {
         // levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]
 
         return levels; 
     }
 
-    getSimpleMovingAverages(period: number, values: number[]) {
+    getSimpleMovingAverages(period: number, values: number[]): number[] {
         return SMA.calculate({ period, values });
     }
 }

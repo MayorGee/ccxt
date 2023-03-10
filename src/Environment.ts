@@ -30,8 +30,12 @@ export default class Environment {
         return process.env.ALLOCATION;
     }
 
-    static getSpread(): string | undefined {
-        return process.env.SPREAD;
+    static getStopLoss(): string | undefined {
+        return process.env.STOP_LOSS;
+    }
+
+    static getTradePositionRange(): string | undefined {
+        return process.env.TRADE_POSITION_RANGE;
     }
 
     static getTickInterval(): string | undefined {
