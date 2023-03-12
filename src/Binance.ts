@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { config } from './config/config.js';
 import { binanceClient } from './config/binanceClient.js';
-import { Balance, Balances, binance } from 'ccxt';
+import { Balance, Balances, binance, Order } from 'ccxt';
 
 export default class Binance {
     static client: binance = binanceClient;
@@ -20,30 +20,8 @@ export default class Binance {
     
     static async createOrders() {
         await this.cancelAllOrders();
-   
-        const marketPrice = await this.getMarketPrice();
-    
-        const sellPrice = await this.getSellPrice();
-        const buyPrice = await this.getBuyPrice();
         
-        const [ assetBalance, baseBalance ] = await this.getBalances();
-
-        // console.log(`
-        //     FREE BALANCES:
-        //     Asset Balance -  ${assetBalance.free}
-        //     Base Balance -  ${baseBalance.free}
-        // `)
-
-        const [ sellVolume, buyVolume ] = await this.getVolumes();
-    
-        // await this.client.createLimitSellOrder(this.market, sellVolume, sellPrice);
-        // await this.client.createLimitBuyOrder(this.market, buyVolume, buyPrice);
-     
-        // console.log(`
-        //     New tick for ${this.market}...
-        //     Created limit sell order for ${sellVolume} at ${sellPrice}
-        //     Created limit buy order for ${buyVolume} at ${buyPrice}
-        // `)
+        console.log('NOTHING HERE FAM, YOU MAY NEED TO COME CHECK THIS OUT DAWG!');
     }
 
     static prepareBuyPositions(lowerLimit: number, upperLimit: number) {
@@ -51,7 +29,6 @@ export default class Binance {
         
         for(let i = 0; i < this.tradePositionRange; i++) {
             upperLimit = upperLimit - buyRange;
-
             this.buyPositions.push(upperLimit);
         }
     }
@@ -60,12 +37,21 @@ export default class Binance {
         return this.buyPositions;
     }
 
-    static async createBuyOrders() {
-        const [sellVolume, buyVolume] = await this.getVolumes();
+    static async createLimitBuyOrders() {
+        const buyVolume = await this.getBuyVolume();
 
         this.buyPositions.forEach(async (buyPosition) => {
             // await this.client.createLimitBuyOrder(this.market, buyVolume, buyPosition);
             console.log(`Created Limit Buy Order at ${buyPosition} for ${buyVolume} on ${this.market}`);
+        });
+    }
+
+    static async createLimitSellOrders() {
+        const sellVolume = await this.getSellVolume();
+
+        this.sellPositions.forEach(async (sellPosition) => {
+            // await this.client.createLimitSellOrder(this.market, sellVolume, sellPrice);
+            console.log(`Created Limit Sell Order at ${sellPosition} for ${sellVolume} on ${this.market}`);
         });
     }
 
@@ -92,24 +78,30 @@ export default class Binance {
         return buyPrice;
     }
 
-    static async getBalances(): Promise<Balance[]> {
+    static async getAssetBalance(): Promise<Balance> {
         const balances: Balances = await this.client.fetchBalance();
 
-        const assetBalance = balances[this.assetTicker];
-        const baseBalance = balances[this.baseTicker];
-
-        return [assetBalance, baseBalance];
+        return balances[this.assetTicker];
     }
 
-    static async getVolumes(): Promise<number[]> {
-        const [ assetBalance, baseBalance ] = await this.getBalances();
+    static async getBaseBalance(): Promise<Balance> {
+        const balances: Balances = await this.client.fetchBalance();
+
+        return balances[this.baseTicker];
+    }
+
+    static async getSellVolume(): Promise<number> {
+        const assetBalance = await this.getAssetBalance();
+
+        return assetBalance.free * this.allocation;
+    }
+
+    static async getBuyVolume(): Promise<number> {
+        const baseBalance = await this.getBaseBalance();
         const marketPrice = await this.getMarketPrice();
-
-        const sellVolume = assetBalance.free * this.allocation;
         const buyVolume = ((baseBalance.free * this.allocation) / marketPrice) / this.tradePositionRange;
-        // volume divided by tradePosition (5)
 
-        return [sellVolume, buyVolume];
+        return buyVolume;
     }
 
     static setBuyPositions(buyPositions: number[]) {
@@ -123,13 +115,13 @@ export default class Binance {
     static async cancelAllOrders(): Promise<void> {
         const orders = await this.client.fetchOpenOrders(this.market);
 
-        orders.forEach(order => {
+        orders.forEach((order: Order) => {
             this.client.cancelOrder(order.id);
         });
     }
 
     static async initTrade() {
-        await this.createOrders();
+        // await this.createOrders(); 
 
         // setInterval(
         //     this.createOrders, 
