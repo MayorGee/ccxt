@@ -1,6 +1,6 @@
 import { getFibRetracement, levels } from 'fib-retracement';
 import { SMA } from 'technicalindicators';
-import { IFibonacci } from './types';
+import { IFibonacci } from '../abstracts/interfaces';
 
 export default class Indicator {
     // https://www.npmjs.com/package/technicalindicators

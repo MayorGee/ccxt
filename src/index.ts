@@ -1,5 +1,5 @@
-import Binance from './Binance.js';
-import Telegram from './Telegram.js';
+import Binance from './model/Binance.js';
+import Telegram from './model/Telegram.js';
 
 const telegram = new Telegram();
 

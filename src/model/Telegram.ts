@@ -2,12 +2,14 @@ import axios from 'axios';
 
 import TelegramBot from 'node-telegram-bot-api';
 import Binance from './Binance.js';
-import Environment from './Environment.js'; 
+import Environment from '../Environment.js'; 
 import { 
     SET_RANGE_OPTIONS, 
     SET_RANGE_REPLY, 
     START_COMMAND_OPTIONS 
-} from './options.js';
+} from '../data/options-markup.js';
+import Position from './Position.js';
+import Base from './Base.js';
 
 export default class Telegram {
     private bot: TelegramBot;
@@ -62,8 +64,8 @@ export default class Telegram {
                 const lowerLimit = Number(range[0]);
                 const upperLimit = Number(range[1]);
 
-                Binance.prepareBuyPositions(lowerLimit, upperLimit);
-                const buyPositions = Binance.getBuyPositions();
+                Position.prepareBuyPositions(lowerLimit, upperLimit);
+                const buyPositions = Position.getBuyPositions();
 
                 await this.sendMessage(
                     message.chat.id, 
@@ -73,8 +75,8 @@ export default class Telegram {
         });
 
         this.bot.onText(/\/buy/, async (message) => {
-            const buyPositions = Binance.getBuyPositions();
-            const buyVolume = await Binance.getBuyVolume();
+            const buyPositions =  Position.getBuyPositions();
+            const buyVolume = await Base.getBuyVolume();
 
             buyPositions.forEach(async (buyPosition) => {
                 // await Binance.createLimitBuyOrders();
