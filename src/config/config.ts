@@ -10,5 +10,6 @@ export const config = {
     allocation: Environment.getAllocation() as string,
     stopLoss: Environment.getStopLoss() as string,
     tickInterval: Environment.getTickInterval() as string,
-    tradePositionRange: Environment.getTradePositionRange() as string
+    tradePositionRange: Environment.getTradePositionRange() as string,
+    timeFrame: Environment.getTimeFrame() as string
 };

@@ -3,26 +3,32 @@ export const START_COMMAND_OPTIONS = {
         'keyboard': [
             [
                 {
-                    text: '/setRange'
+                    text: '/buy'
+                },
+                {
+                    text: '/showRSI'
                 },                                        
                 {
-                    text: '/trade'
+                    text: '/sell'
                 }
             ],   
             [
                 {
-                    text: '/performance'
+                    text: '/showSwingEndPoints'
+                },
+                {
+                    text: '/showMarketPrice'
                 }
             ],
             [
                 {
-                    text: '/table'
+                    text: '/orders'
                 },
                 {
                     text: '/balance'
                 },
                 {
-                    text: '/blyat'
+                    text: '/performance'
                 }
             ]
         ]

@@ -49,4 +49,8 @@ export default class Environment {
     static getChatId(): string | undefined {
         return process.env.CHAT_ID;
     }
+
+    static getTimeFrame(): string | undefined {
+        return process.env.TIME_FRAME;
+    }
 }

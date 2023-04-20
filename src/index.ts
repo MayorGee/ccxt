@@ -1,7 +1,7 @@
-import Binance from './Binance.js';
-import Telegram from './Telegram.js';
+import OhlcvModel from './models/OhlcvModel.js';
+import Trader from './models/Trader.js';
 
-const telegram = new Telegram();
+OhlcvModel.prepareSwingExtremes();
 
-Binance.initTrade();
-telegram.initBot();
+const trader = new Trader();
+trader.init();
