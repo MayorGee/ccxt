@@ -1,3 +1,5 @@
+import { OrderSide } from "./enum";
+
 export interface IFibonacci {
     1: number
     0.786: number,
@@ -14,7 +16,8 @@ export interface Ohlcv {
     high: number,
     low: number,
     close: number,
-    volume: number
+    volume: number,
+    movingAverageDecision?: OrderSide.buy | OrderSide.sell
 }
 
 export interface BuyPosition {

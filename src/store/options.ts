@@ -1,23 +1,17 @@
-export const START_COMMAND_OPTIONS = {
+export const SWING_COMMAND_OPTIONS = {
     reply_markup: {
         'keyboard': [
             [
                 {
-                    text: '/buy'
-                },
+                    text: '/buySwing'
+                },                                       
                 {
-                    text: '/showRSI'
-                },                                        
-                {
-                    text: '/sell'
+                    text: '/sellSwing'
                 }
             ],   
             [
                 {
                     text: '/showSwingEndPoints'
-                },
-                {
-                    text: '/showMarketPrice'
                 }
             ],
             [
@@ -30,6 +24,41 @@ export const START_COMMAND_OPTIONS = {
                 {
                     text: '/performance'
                 }
+            ]
+        ]
+    }
+};
+
+export const MOVING_AVERAGE_COMMAND_OPTIONS = {
+    reply_markup: {
+        'keyboard': [
+            [
+                {
+                    text: '/searchForEntryPoint'
+                },                                       
+                {
+                    text: '/emptyCommand'
+                }
+            ]
+        ]
+    }
+};
+
+export const START_COMMAND_OPTIONS = {
+    reply_markup: {
+        'keyboard': [
+            [
+                {
+                    text: '/swing'
+                },
+                {
+                    text: '/movingAverage'
+                }
+            ],
+            [
+                {
+                    text: '/showRSI'
+                },
             ]
         ]
     }

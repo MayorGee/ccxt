@@ -1,7 +1,9 @@
-import OhlcvModel from './models/OhlcvModel.js';
-import Trader from './models/Trader.js';
+import MovingAverageTrader from './models/MovingAverageTrader.js';
+// import SwingTrader from './models/SwingTrader.js';
 
-OhlcvModel.prepareSwingExtremes();
+const movingAverageTrader = new MovingAverageTrader();
+movingAverageTrader.initTelegram();
 
-const trader = new Trader();
-trader.init();
+// const swingTrader = new SwingTrader();
+// swingTrader.prepareSwingExtremes();
+// swingTrader.initTelegram();

@@ -1,24 +1,36 @@
-
-import { binance } from 'ccxt';
+import { Order, binance } from 'ccxt';
 
 import { binanceClient } from '../config/binanceClient.js';
 import Exchange from './Exchange.js';
-import { SwingLowHigh } from '../abstract/interfaces.js';
+import { OrderSide, OrderType } from '../abstract/enum.js';
 
 export default class Binance extends Exchange {
     public client: binance = binanceClient;
-    public swingExtremes: SwingLowHigh[] = [];
     
-    public async createOrders() {
-        await this.cancelAllOrders();
-        
-        console.log('ALL ORDERS CANCELLED!');
+    public async cancelAllOrders(): Promise<void> {
+        const orders = await this.client.fetchOpenOrders(this.market);
+
+        orders.forEach((order: Order) => {
+            this.client.cancelOrder(order.id);
+        });
     }
 
-    public async createLimitBuyOrder() {
+    public async createLimitBuyOrder(limitBuyPrice: number) {
         const buyVolume = await this.getBuyVolume();
-        // exchange.createLimitBuyOrder (symbol, amount, price, params)
-        // await this.client.createLimitBuyOrder(this.market, buyVolume, buyPosition);
+        const stopLossPrice = this.getStopLossPrice(limitBuyPrice);
+        const takeProfitPrice = this.getTakeProfitPrice(limitBuyPrice);
+        
+        // set Initial Order
+        // exchange.create_order(symbol, 'limit', 'buy', amount, price)
+        // this.client.createOrder(this.market, OrderType.limit, OrderSide.buy, buyVolume, limitBuyPrice);
+
+        // set StopLoss
+        // exchange.create_order(symbol, 'market', 'sell', amount, None, {'stopPrice': stopLossPrice})
+        // this.client.createOrder(this.market, OrderType.market, OrderSide.sell, buyVolume, stopLossPrice);
+
+        // set TakeProfit
+        // exchange.create_order(symbol, 'market', 'sell', amount, None, {'stopPrice': stopLossPrice})
+        // this.client.createOrder(this.market, OrderType.market, OrderSide.sell, buyVolume, takeProfitPrice);
     }
 
     public async getBuyVolume(): Promise<number> {
@@ -33,13 +45,5 @@ export default class Binance extends Exchange {
         const assetBalance = await this.getAssetBalance();
 
         return assetBalance.free * this.allocation;
-    }
-
-    public getSwingExtremes() {
-        return this.swingExtremes;
-    }
-
-    public setSwingExtremes(swingExtremes: SwingLowHigh[]) {
-        this.swingExtremes = swingExtremes;
     }
 }

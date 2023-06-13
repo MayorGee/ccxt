@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { Balance, Balances, Order } from 'ccxt';
+import { Balance, Balances } from 'ccxt';
 import { config } from '../config/config.js';
 
 export default class Exchange {
@@ -10,14 +10,13 @@ export default class Exchange {
     public baseTicker = config.baseTicker;
     public assetName = config.assetName;
     public baseName = config.baseName;
-    public stopLoss = config.stopLoss;
+    public stopLoss = Number(config.stopLoss);
+    public takeProfit = Number(config.stopLoss);
     public allocation = Number(config.allocation);
     public tradePositionRange = Number(config.tradePositionRange);
     public market = `${config.assetTicker}/${config.baseTicker}`;  // BTC/USDT;
 
-    public async createOrders() {}
-    public async createLimitBuyOrders() {}
-    public async createLimitSellOrders() {}
+    public async cancelAllOrders(): Promise<void> {}
 
     public async getMarketPrice(): Promise<number> {
         const averagePrices = await Promise.all([
@@ -27,13 +26,13 @@ export default class Exchange {
     
         return averagePrices[0].data[this.assetName].usd / averagePrices[1].data[this.baseName].usd;
     }
+ 
+    protected getStopLossPrice(limitBuyPrice: number) {
+        return limitBuyPrice - this.stopLoss
+    }
 
-    public async cancelAllOrders(): Promise<void> {
-        const orders = await this.client.fetchOpenOrders(this.market);
-
-        orders.forEach((order: Order) => {
-            this.client.cancelOrder(order.id);
-        });
+    protected getTakeProfitPrice(limitBuyPrice: number) {
+        return limitBuyPrice + this.stopLoss
     }
 
     public async getAssetBalance(): Promise<Balance> {
@@ -50,13 +49,4 @@ export default class Exchange {
 
     public async getSellVolume(): Promise<any> {}
     public async getBuyVolume(): Promise<any> {}
-
-    public async initTrade() {
-        // await this.createOrders(); 
-
-        // setInterval(
-        //     this.createOrders, 
-        //     this.tickInterval
-        // );
-    }
 }

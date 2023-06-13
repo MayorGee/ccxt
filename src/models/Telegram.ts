@@ -7,8 +7,8 @@ import { TelegramMessage } from '../abstract/interfaces.js';
 
 export default class Telegram {
     static bot: TelegramBot;
-    private token: string;
     static chatId: string;
+    private token: string;
 
     constructor() {
         this.token = Environment.getBotToken() as string;
@@ -18,7 +18,6 @@ export default class Telegram {
 
     public initBot() {
         Telegram.bot.on('polling_error', console.log);
-
         Telegram.bot.on('message', (message) => {
             switch (message.text) {
                 case '/start':
@@ -30,64 +29,11 @@ export default class Telegram {
 
                 case '/stop':
                     Telegram.sendMessage({
-                        message: 'GoodBye! Money will be made by users while you are away'
+                        message: 'GoodBye! Money will be made by other users while you are away'
                     });
                 break;
             }
         });
-
-
-        // Telegram.bot.onText(/\/setRange/, async (message) => {
-        //     const marketPrice = await Binance.getMarketPrice();
-        //     const currentMarketPriceMessage = `Current Market Price is ${marketPrice}`;
-
-        //     Telegram.sendMessage({
-        //         message: currentMarketPriceMessage, 
-        //         basicOptions: SET_RANGE_OPTIONS
-        //     });
-
-        // });
-
-
-        // Telegram.bot.onText(/\/setBuyRange/, async (message) => {
-        //     const rangePrompt = await Telegram.sendMessage({
-        //         message: 'Reply this with your lower to upper buy limit (e.g 200 to 500)', 
-        //         basicOptions: SET_RANGE_REPLY
-        //     });
-
-        //     Telegram.bot.onReplyToMessage(message.chat.id, rangePrompt.message_id, async (message) => {
-        //         const range  = message.text?.split('to') as string[];
-        //         const lowerLimit = Number(range[0]);
-        //         const upperLimit = Number(range[1]);
-
-        //         Binance.prepareBuyPositions(lowerLimit, upperLimit);
-        //         const buyPositions = Binance.getBuyPositions();
-
-        //         await Telegram.sendMessage({
-        //             chatId:  message.chat.id, 
-        //             message: `Lower Trading Limit - ${lowerLimit} \nUpper Trading Limit - ${upperLimit}\nYou will be making buy orders at the positions: ${buyPositions}`
-        //         });
-        //     })
-        // });
-
-
-        // Telegram.bot.onText(/\/setSellRange/, async (message) => {
-        //     const rangePrompt = await Telegram.sendMessage({ 
-        //         message: 'Reply this with your lower to upper sell limit (e.g 200 to 500)',
-        //         basicOptions: SET_RANGE_REPLY
-        //     });
-
-        //     Telegram.bot.onReplyToMessage(message.chat.id, rangePrompt.message_id, async (message) => {
-        //         const range  = message.text?.split('to') as string[];
-        //         const lowerLimit = Number(range[0]);
-        //         const upperLimit = Number(range[1]);
-
-        //         await Telegram.sendMessage({
-        //             chatId: message.chat.id, 
-        //             message: `Lower Trading Limit - ${lowerLimit} \nUpper Trading Limit - ${upperLimit}`
-        //         });
-        //     })
-        // });
     }
 
     public setOnText(regEx: RegExp, callBack: any) {

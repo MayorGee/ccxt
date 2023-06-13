@@ -1,66 +1,51 @@
 import axios from 'axios';
-
-import TelegramBot from 'node-telegram-bot-api';
 import Binance from './Binance.js';
-import OhlcvModel from './OhlcvModel.js';
 import Telegram from './Telegram.js';
 import Indicator from './Indicator.js';
+import TelegramBot from 'node-telegram-bot-api';
+import { MOVING_AVERAGE_COMMAND_OPTIONS, SWING_COMMAND_OPTIONS } from '../store/options.js';
+import { config } from '../config/config.js';
 
+const telegram = new Telegram();
 const binance = new Binance();
-const telegram = new  Telegram();
-
-const params = {
-    'stopLoss': {
-        'type': 'limit', // or 'market'
-        'price': binance.stopLoss,
-        'triggerPrice': 101.25,
-    },
-    // 'takeProfit': {
-    //     'type': 'market',
-    //     'triggerPrice': 150.75,
-    // }
-}
 
 export default class Trader {
+    protected telegram!: Telegram;
+    protected binance!: Binance;
+    protected symbol = `${config.assetTicker}/${config.baseTicker}`;  // BTC/USDT;
+    protected timeframe = config.timeFrame;
 
-    public init() {
-        telegram.initBot();
-        telegram.setOnText(/\/showMarketPrice/, this.showMarketPriceCommand);
-        telegram.setOnText(/\/buy/, this.buySwingCommand);
-        telegram.setOnText(/\/price (.+)/, this.showTickerPriceCommand);
-        telegram.setOnText(/\/showSwingEndPoints/, this.showSwingEndPoints);
-        telegram.setOnText(/\/showRSI/, this.showRSI);
+    public initBot() {
+        this.telegram = telegram;
+        this.binance = binance;
+        this.telegram.initBot();
+        this.telegram.setOnText(/\/swing/, this.selectSwingStrategy.bind(this));
+        this.telegram.setOnText(/\/movingAverage/, this.selectMovingAverageStrategy.bind(this));
+        this.telegram.setOnText(/\/price (.+)/, this.showTickerPriceCommand.bind(this));
+        this.telegram.setOnText(/\/showRSI/, this.showRSI.bind(this));
     }
 
-    private async showMarketPriceCommand(message: TelegramBot.Message) {
-        const marketPrice = await binance.getMarketPrice();
-        const currentMarketPriceMessage = `Current Market Price for ${binance.market} is ${marketPrice}`;
-
-        Telegram.sendMessage({
-            message: currentMarketPriceMessage
+    private selectMovingAverageStrategy() {
+        Telegram.sendMessage({ 
+            message: `Moving Average Strategy Selected! \nSelect from the options below to proceed`,
+            basicOptions: MOVING_AVERAGE_COMMAND_OPTIONS
         });
     }
 
-    private async buySwingCommand() {
-        const swingExtremes = OhlcvModel.getSwingExtremes();
-
-        swingExtremes.forEach(async(swingExtreme) => {
-            // await binance.createLimitBuyOrder();
-            Telegram.sendMessage({
-                message: `Created Limit Buy at -  ${swingExtreme.lowestLow}`
-            });
+    private selectSwingStrategy() {
+        Telegram.sendMessage({ 
+            message: `Swing Strategy Selected! \nSelect from the options below to proceed`,
+            basicOptions: SWING_COMMAND_OPTIONS
         });
     }
 
-    private async showTickerPriceCommand(message: TelegramBot.Message, data: RegExpExecArray) {
+    public initTelegram() {}
+
+    private async showTickerPriceCommand(message: TelegramBot.Message, data: RegExpExecArray) {     
         try {
             if(data) {
                 let ticker = data[1];
-                console.log('Ticker: ', ticker);
-
                 const price = await this.getCurrencyPrice(ticker);
-
-                console.log('PRICE: ', price);
                  
                 Telegram.sendMessage({
                     message: price
@@ -76,17 +61,6 @@ export default class Trader {
         }
     }
 
-    private showSwingEndPoints() {
-        const swingExtremes = OhlcvModel.getSwingExtremes();
-    
-        swingExtremes.forEach((swingExtreme) => {
-            Telegram.sendMessage({
-                message: `Highest High - ${swingExtreme.highestHigh} \nLowest Low - ${swingExtreme.lowestLow}`
-            });
-        });
-
-    }
-
     private async showRSI() {
         const rsi = await Indicator.getRSI();
 
@@ -98,8 +72,11 @@ export default class Trader {
     private async getCurrencyPrice(ticker: string): Promise<string> {
         const price = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${ticker}&vs_currencies=usd`);
 
-        console.log('LOOK HERE: ', price.data[ticker].usd);
-
         return price.data[ticker].usd.toString();
+    }
+
+    protected convertTimestamp(timestamp: number): string {
+        const dateTime = new Date(timestamp * 1000);
+        return dateTime.toString();
     }
 }
