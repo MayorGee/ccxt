@@ -2,7 +2,6 @@ import { Order, binance } from 'ccxt';
 
 import { binanceClient } from '../config/binanceClient.js';
 import Exchange from './Exchange.js';
-import { OrderSide, OrderType } from '../abstract/enum.js';
 
 export default class Binance extends Exchange {
     public client: binance = binanceClient;
@@ -13,6 +12,10 @@ export default class Binance extends Exchange {
         orders.forEach((order: Order) => {
             this.client.cancelOrder(order.id);
         });
+    }
+
+    public fetchTicker(symbol: string) {
+        return this.client.fetchTicker(symbol);
     }
 
     public async createLimitBuyOrder(limitBuyPrice: number) {

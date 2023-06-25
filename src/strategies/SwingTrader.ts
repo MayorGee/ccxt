@@ -1,14 +1,13 @@
-import { Ohlcv, SwingLowHigh } from '../abstract/interfaces.js';
-import OhlcvModel from './OhlcvModel.js';
-import Telegram from './Telegram.js';
-import Trader from './Trader.js';
+import Trader from '../models/Trader.js';
+import { IStrategy, Ohlcv, SwingLowHigh } from '../abstract/interfaces.js';
+import OhlcvModel from '../models/OhlcvModel.js';
+import Telegram from '../models/Telegram.js';
 
-export default class SwingTrader extends Trader {
+export default class SwingTrader extends Trader implements IStrategy {
     private swingExtremes: SwingLowHigh[] = [];
     static candlesLength = 500;
     
-    public initTelegram() {
-        this.initBot();
+    public execute() {
         this.telegram.setOnText(/\/buySwing/, this.buySwingCommand.bind(this));
         this.telegram.setOnText(/\/showSwingEndPoints/, this.showSwingEndPoints.bind(this));
     }
@@ -18,7 +17,7 @@ export default class SwingTrader extends Trader {
 
         swingExtremes.forEach(async({ lowestLow }: SwingLowHigh) => {
             // await this.binance.createLimitBuyOrder(lowestLow);
-            Telegram.sendMessage({
+            this.telegram.sendMessage({
                 message: `Created Limit Buy at - ${lowestLow}`
             });
         });
@@ -28,7 +27,7 @@ export default class SwingTrader extends Trader {
         const swingExtremes = this.getSwingExtremes();
     
         swingExtremes.forEach((swingExtreme: SwingLowHigh) => {
-            Telegram.sendMessage({
+            this.telegram.sendMessage({
                 message: `Highest High - ${swingExtreme.highestHigh} \nLowest Low - ${swingExtreme.lowestLow}`
             });
         });

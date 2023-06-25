@@ -49,6 +49,24 @@ export const START_COMMAND_OPTIONS = {
         'keyboard': [
             [
                 {
+                    text: '/chooseStrategy'
+                
+                }
+            ],
+            [
+                {
+                    text: '/showRSI'
+                },
+            ]
+        ]
+    }
+};
+
+export const STRATEGY_OPTIONS = {
+    reply_markup: {
+        'keyboard': [
+            [
+                {
                     text: '/swing'
                 },
                 {
@@ -57,7 +75,7 @@ export const START_COMMAND_OPTIONS = {
             ],
             [
                 {
-                    text: '/showRSI'
+                    text: '/marketMaker'
                 },
             ]
         ]

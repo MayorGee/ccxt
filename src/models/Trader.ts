@@ -5,41 +5,43 @@ import Indicator from './Indicator.js';
 import TelegramBot from 'node-telegram-bot-api';
 import { MOVING_AVERAGE_COMMAND_OPTIONS, SWING_COMMAND_OPTIONS } from '../store/options.js';
 import { config } from '../config/config.js';
-
-const telegram = new Telegram();
-const binance = new Binance();
+import SwingTrader from '../strategies/SwingTrader.js';
 
 export default class Trader {
-    protected telegram!: Telegram;
-    protected binance!: Binance;
+    public telegram = new Telegram();
+    protected binance = new Binance();
+    protected indicator = new Indicator();
     protected symbol = `${config.assetTicker}/${config.baseTicker}`;  // BTC/USDT;
     protected timeframe = config.timeFrame;
 
     public initBot() {
-        this.telegram = telegram;
-        this.binance = binance;
         this.telegram.initBot();
-        this.telegram.setOnText(/\/swing/, this.selectSwingStrategy.bind(this));
-        this.telegram.setOnText(/\/movingAverage/, this.selectMovingAverageStrategy.bind(this));
+        // this.telegram.setOnText(/\/swing/, this.selectSwingStrategy.bind(this));
+        // this.telegram.setOnText(/\/movingAverage/, this.selectMovingAverageStrategy.bind(this));
+        // this.telegram.setOnText(/\/marketMaker/, this.selectMarketMakerStrategy.bind(this));
         this.telegram.setOnText(/\/price (.+)/, this.showTickerPriceCommand.bind(this));
         this.telegram.setOnText(/\/showRSI/, this.showRSI.bind(this));
     }
 
-    private selectMovingAverageStrategy() {
-        Telegram.sendMessage({ 
-            message: `Moving Average Strategy Selected! \nSelect from the options below to proceed`,
-            basicOptions: MOVING_AVERAGE_COMMAND_OPTIONS
-        });
-    }
+    // private selectMovingAverageStrategy() {
+    //     this.telegram.sendMessage({ 
+    //         message: `Moving Average Strategy Selected! \nSelect from the options below to proceed`,
+    //         basicOptions: MOVING_AVERAGE_COMMAND_OPTIONS
+    //     });
+    // }
 
-    private selectSwingStrategy() {
-        Telegram.sendMessage({ 
-            message: `Swing Strategy Selected! \nSelect from the options below to proceed`,
-            basicOptions: SWING_COMMAND_OPTIONS
-        });
-    }
+    // private selectMarketMakerStrategy() {
+    //     this.telegram.sendMessage({ 
+    //         message: `Market Making Strategy Selected!`
+    //     });
+    // }
 
-    public initTelegram() {}
+    // private selectSwingStrategy() {
+    //     this.telegram.sendMessage({ 
+    //         message: `Swing Strategy Selected! \nSelect from the options below to proceed`,
+    //         basicOptions: SWING_COMMAND_OPTIONS
+    //     });
+    // }
 
     private async showTickerPriceCommand(message: TelegramBot.Message, data: RegExpExecArray) {     
         try {
@@ -47,12 +49,12 @@ export default class Trader {
                 let ticker = data[1];
                 const price = await this.getCurrencyPrice(ticker);
                  
-                Telegram.sendMessage({
+                this.telegram.sendMessage({
                     message: price
                 });  
     
             } else {
-                Telegram.sendMessage({ 
+                this.telegram.sendMessage({ 
                     message: 'Error getting data'
                 });
             }
@@ -62,9 +64,9 @@ export default class Trader {
     }
 
     private async showRSI() {
-        const rsi = await Indicator.getRSI();
+        const rsi = await this.indicator.getRSI();
 
-        Telegram.sendMessage({
+        this.telegram.sendMessage({
             message: `Current RSI is ${rsi}`
         });
     }

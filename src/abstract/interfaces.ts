@@ -1,4 +1,4 @@
-import { OrderSide } from "./enum";
+import { OrderSide } from './enum';
 
 export interface IFibonacci {
     1: number
@@ -34,4 +34,8 @@ export interface TelegramMessage {
 export interface SwingLowHigh {
     lowestLow: number;
     highestHigh: number;
+}
+
+export interface IStrategy {
+    execute(): void
 }

@@ -6,7 +6,7 @@ import OhlcvModel from './OhlcvModel.js';
 export default class Indicator {
     // https://www.npmjs.com/package/technicalindicators
 
-    static async getRSI() {
+    public async getRSI() {
         const lastFiveHundredCandles = await OhlcvModel.getData() as Ohlcv[];
         const closingPrices = lastFiveHundredCandles.map(candle => candle.close);
 
@@ -16,7 +16,7 @@ export default class Indicator {
         return rsi;
     }
 
-    static getPriceChange(closingPrices: number[]) {
+    private getPriceChange(closingPrices: number[]) {
         let averageUpwardChange = 0;
         let averageDownwardChange = 0;
 

@@ -1,59 +1,67 @@
-import axios from 'axios';
-
 import TelegramBot from 'node-telegram-bot-api';
 import Environment from '../Environment.js'; 
-import { START_COMMAND_OPTIONS } from '../store/options.js';
+import { START_COMMAND_OPTIONS, STRATEGY_OPTIONS } from '../store/options.js';
 import { TelegramMessage } from '../abstract/interfaces.js';
 
 export default class Telegram {
-    static bot: TelegramBot;
-    static chatId: string;
+    private bot: TelegramBot;
+    private chatId: string;
     private token: string;
 
     constructor() {
         this.token = Environment.getBotToken() as string;
-        Telegram.bot = new TelegramBot(this.token, { polling: true });
-        Telegram.chatId = Environment.getChatId() as string;
+        this.bot = new TelegramBot(this.token, { polling: true });
+        this.chatId = Environment.getChatId() as string;
     }
 
     public initBot() {
-        Telegram.bot.on('polling_error', console.log);
-        Telegram.bot.on('message', (message) => {
-            switch (message.text) {
-                case '/start':
-                    Telegram.sendMessage({ 
-                        message: 'Lets make some coin baby!',
-                        basicOptions: START_COMMAND_OPTIONS
-                    });
-                break;
+        this.bot.on('polling_error', console.log);
+        this.bot.on('message', (message) => {
+            const text = message.text;
 
-                case '/stop':
-                    Telegram.sendMessage({
-                        message: 'GoodBye! Money will be made by other users while you are away'
-                    });
-                break;
+            if (text?.startsWith('/')) {
+                const command = text.substring(1);
+                switch (command) {
+                    case 'start':
+                        this.sendMessage({ 
+                            message: 'I\'m awake sir!',
+                            basicOptions: START_COMMAND_OPTIONS
+                        }); 
+                    break;
+
+                    case 'chooseStrategy':
+                        this.promptStrategySelection();
+                    break;
+    
+                    case 'stop':
+                        this.sendMessage({
+                            message: 'GoodBye! Money will be made by other users while you are away'
+                        });
+                    break;
+                }
             }
         });
     }
 
+    private async promptStrategySelection(): Promise<void> {
+        this.sendMessage({
+            message: 'Choose a strategy from the options below',
+            basicOptions: STRATEGY_OPTIONS
+        });
+    }
+
     public setOnText(regEx: RegExp, callBack: any) {
-        Telegram.bot.onText(RegExp(regEx), function(message, data) {
+        this.bot.onText(RegExp(regEx), function(message, data) {
             callBack(message, data);
         })
     }
 
-    async getCurrencyPrice(ticker: string): Promise<string> {
-        const price = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${ticker}&vs_currencies=usd`);
-
-        return price.data[ticker].usd;
-    }
-
-    static async sendMessage({
-        chatId = Telegram.chatId, 
+    public async sendMessage({
+        chatId = this.chatId, 
         message, 
         basicOptions = {}
     }:TelegramMessage): Promise<TelegramBot.Message> {
-        const messagePrompt = Telegram.bot.sendMessage(chatId, message, basicOptions);
+        const messagePrompt = this.bot.sendMessage(chatId, message, basicOptions);
         return messagePrompt;
     }
 }

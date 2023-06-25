@@ -11,9 +11,7 @@ export default class OhlcvModel {
      
     static async getData(): Promise<Ohlcv[] | undefined>  {
         if(!this.client.hasFetchOHLCV) {
-            Telegram.sendMessage({
-                message: 'No OHLCV data for selected pair'
-            })
+            console.log('No OHLCV data for selected pair');
             
             return;
         }
