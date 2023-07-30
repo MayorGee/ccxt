@@ -1,13 +1,23 @@
-import Trader from '../models/Trader.js';
 import { IStrategy, Ohlcv, SwingLowHigh } from '../abstract/interfaces.js';
+import Binance from '../models/Binance.js';
 import OhlcvModel from '../models/OhlcvModel.js';
 import Telegram from '../models/Telegram.js';
 
-export default class SwingTrader extends Trader implements IStrategy {
+export default class Swing implements IStrategy {
     private swingExtremes: SwingLowHigh[] = [];
     static candlesLength = 500;
+    private telegram: Telegram;
+    private binance: Binance;
     
-    public execute() {
+    constructor (
+        telegram: Telegram, 
+        binance: Binance
+    ){
+        this.telegram = telegram;
+        this.binance = binance;
+    }
+
+    public initTelegram() {
         this.telegram.setOnText(/\/buySwing/, this.buySwingCommand.bind(this));
         this.telegram.setOnText(/\/showSwingEndPoints/, this.showSwingEndPoints.bind(this));
     }
@@ -42,7 +52,7 @@ export default class SwingTrader extends Trader implements IStrategy {
 
     public getSwingEndpoints(ohlcv: Ohlcv[], subsetSize: number): SwingLowHigh[] {
         // (500 / 5).roundDownToNearestInteger
-        const subsetCandleSize = Math.floor(SwingTrader.candlesLength / subsetSize);  
+        const subsetCandleSize = Math.floor(Swing.candlesLength / subsetSize);  
         let ohlcvSubsets:Ohlcv[][] = []; // Array of subOhlcvArray
 
         for(let i = 0; i < subsetSize; i++) {

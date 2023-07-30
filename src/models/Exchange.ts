@@ -41,6 +41,10 @@ export default class Exchange {
         return balances[this.assetTicker];
     }
 
+    public getAllExchanges() {
+        
+    }
+
     public async getBaseBalance(): Promise<Balance> {
         const balances: Balances = await this.client.fetchBalance();
 

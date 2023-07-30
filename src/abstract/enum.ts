@@ -1,7 +1,7 @@
 export enum OrderSide {
     buy = 'buy',
     sell = 'sell',
-    none = 'none'
+    hold = 'hold'
 }
 
 export enum OrderType {

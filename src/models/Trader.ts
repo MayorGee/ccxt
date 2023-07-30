@@ -1,47 +1,19 @@
 import axios from 'axios';
-import Binance from './Binance.js';
 import Telegram from './Telegram.js';
 import Indicator from './Indicator.js';
 import TelegramBot from 'node-telegram-bot-api';
-import { MOVING_AVERAGE_COMMAND_OPTIONS, SWING_COMMAND_OPTIONS } from '../store/options.js';
 import { config } from '../config/config.js';
-import SwingTrader from '../strategies/SwingTrader.js';
 
 export default class Trader {
     public telegram = new Telegram();
-    protected binance = new Binance();
     protected indicator = new Indicator();
-    protected symbol = `${config.assetTicker}/${config.baseTicker}`;  // BTC/USDT;
     protected timeframe = config.timeFrame;
 
     public initBot() {
         this.telegram.initBot();
-        // this.telegram.setOnText(/\/swing/, this.selectSwingStrategy.bind(this));
-        // this.telegram.setOnText(/\/movingAverage/, this.selectMovingAverageStrategy.bind(this));
-        // this.telegram.setOnText(/\/marketMaker/, this.selectMarketMakerStrategy.bind(this));
         this.telegram.setOnText(/\/price (.+)/, this.showTickerPriceCommand.bind(this));
         this.telegram.setOnText(/\/showRSI/, this.showRSI.bind(this));
     }
-
-    // private selectMovingAverageStrategy() {
-    //     this.telegram.sendMessage({ 
-    //         message: `Moving Average Strategy Selected! \nSelect from the options below to proceed`,
-    //         basicOptions: MOVING_AVERAGE_COMMAND_OPTIONS
-    //     });
-    // }
-
-    // private selectMarketMakerStrategy() {
-    //     this.telegram.sendMessage({ 
-    //         message: `Market Making Strategy Selected!`
-    //     });
-    // }
-
-    // private selectSwingStrategy() {
-    //     this.telegram.sendMessage({ 
-    //         message: `Swing Strategy Selected! \nSelect from the options below to proceed`,
-    //         basicOptions: SWING_COMMAND_OPTIONS
-    //     });
-    // }
 
     private async showTickerPriceCommand(message: TelegramBot.Message, data: RegExpExecArray) {     
         try {
@@ -59,7 +31,9 @@ export default class Trader {
                 });
             }
         } catch (error: any) {
-            console.log('ERROR: ', error.message);
+            this.telegram.sendMessage({
+                message: `Something went wrong. ${error.message}`
+            }); 
         }
     }
 

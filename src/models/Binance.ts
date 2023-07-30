@@ -2,6 +2,7 @@ import { Order, binance } from 'ccxt';
 
 import { binanceClient } from '../config/binanceClient.js';
 import Exchange from './Exchange.js';
+import { OrderSide } from '../abstract/enum.js';
 
 export default class Binance extends Exchange {
     public client: binance = binanceClient;
@@ -18,10 +19,11 @@ export default class Binance extends Exchange {
         return this.client.fetchTicker(symbol);
     }
 
-    public async createLimitBuyOrder(limitBuyPrice: number) {
-        const buyVolume = await this.getBuyVolume();
-        const stopLossPrice = this.getStopLossPrice(limitBuyPrice);
-        const takeProfitPrice = this.getTakeProfitPrice(limitBuyPrice);
+    public fetchOrderBook(symbol: string) {
+        return this.client.OrderBook(symbol);
+    }
+
+    public async createLimitBuyOrder(symbol: string, orderSize: number, bidPrice: number) {
         
         // set Initial Order
         // exchange.create_order(symbol, 'limit', 'buy', amount, price)
@@ -34,6 +36,25 @@ export default class Binance extends Exchange {
         // set TakeProfit
         // exchange.create_order(symbol, 'market', 'sell', amount, None, {'stopPrice': stopLossPrice})
         // this.client.createOrder(this.market, OrderType.market, OrderSide.sell, buyVolume, takeProfitPrice);
+    }
+
+    public async createLimitSellOrder(symbol: string, orderSize: number, bidPrice: number) {
+        
+        // set Initial Order
+        // exchange.create_order(symbol, 'limit', 'buy', amount, price)
+        // this.client.createOrder(this.market, OrderType.limit, OrderSide.buy, buyVolume, limitBuyPrice);
+
+        // set StopLoss
+        // exchange.create_order(symbol, 'market', 'sell', amount, None, {'stopPrice': stopLossPrice})
+        // this.client.createOrder(this.market, OrderType.market, OrderSide.sell, buyVolume, stopLossPrice);
+
+        // set TakeProfit
+        // exchange.create_order(symbol, 'market', 'sell', amount, None, {'stopPrice': stopLossPrice})
+        // this.client.createOrder(this.market, OrderType.market, OrderSide.sell, buyVolume, takeProfitPrice);
+    }
+
+    public async createMarketOrder(symbol: string, orderSide: 'buy' | 'sell' , orderSize: number) {
+        this.client.createMarketOrder(symbol, orderSide, orderSize);
     }
 
     public async getBuyVolume(): Promise<number> {

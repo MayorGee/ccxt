@@ -2,7 +2,6 @@ import { OHLCV, binance } from 'ccxt';
 import { Ohlcv } from '../abstract/interfaces.js';
 import { config } from '../config/config.js';
 import { binanceClient } from '../config/binanceClient.js';
-import Telegram from './Telegram.js';
 
 export default class OhlcvModel {
     static timeframe = config.timeFrame;
@@ -11,6 +10,10 @@ export default class OhlcvModel {
      
     static async getData(): Promise<Ohlcv[] | undefined>  {
         if(!this.client.hasFetchOHLCV) {
+            // Telegram.sendMessage({
+            //     message: 'No OHLCV data for selected pair'
+            // })
+
             console.log('No OHLCV data for selected pair');
             
             return;

@@ -1,4 +1,5 @@
-import { OrderSide } from './enum';
+import Telegram from '../models/Telegram.js';
+import { OrderSide } from './enum.js';
 
 export interface IFibonacci {
     1: number
@@ -25,6 +26,11 @@ export interface BuyPosition {
     volume: number
 }
 
+export interface BollingerBand {
+    upperBand: number,
+    lowerBand: number
+}
+
 export interface TelegramMessage {
     chatId?: string | number, 
     message: string, 
@@ -37,5 +43,5 @@ export interface SwingLowHigh {
 }
 
 export interface IStrategy {
-    execute(): void
+    initTelegram(telegram: Telegram): void
 }

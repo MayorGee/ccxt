@@ -1,22 +1,25 @@
-import Trader from '../models/Trader.js';
-import Telegram from '../models/Telegram.js';
-
 import { IStrategy, Ohlcv } from '../abstract/interfaces.js';
 import { OrderSide } from '../abstract/enum.js';
 import OhlcvModel from '../models/OhlcvModel.js';
+import Telegram from '../models/Telegram.js';
 
-export default class MovingAverageTrader extends Trader implements IStrategy {
+export default class MovingAverageCrossOver implements IStrategy {
     private shortMovingAverage = 20;
     private longMovingAverage = 50;
-    private position = OrderSide.none;
+    private position = OrderSide.hold;
+    private telegram: Telegram;
+    
+    constructor(telegram: Telegram) {
+        this.telegram = telegram;
+    }
 
-    public execute() {
-        this.telegram.setOnText(/\/searchForEntryPoint/, this.searchForEntryPoint.bind(this));
+    public initTelegram() {
+        this.telegram.setOnText(/\/findMovingAverageEntry/, this.findMovingAverageEntry.bind(this));
     }    
 
-    private async searchForEntryPoint() {
+    private async findMovingAverageEntry() {
         this.telegram.sendMessage({
-            message: 'Searching...'
+            message: 'Searching For Moving Average Entry Points...'
         });
 
         setInterval(async () => {
@@ -26,9 +29,16 @@ export default class MovingAverageTrader extends Trader implements IStrategy {
 
     private async triggerOrderSignal() {
         const candles = await OhlcvModel.getData() as Ohlcv[];
-        const shortAverage = this.calculateMovingAverage(candles, this.shortMovingAverage);
-        const longAverage = this.calculateMovingAverage(candles, this.longMovingAverage);
+        const closePrices = candles.map((candle) => candle.close);
 
+        const shortAverage = this.calculateMovingAverage(closePrices, this.shortMovingAverage);
+        const longAverage = this.calculateMovingAverage(closePrices, this.longMovingAverage);
+
+        // generate buy/sell signals based on averages
+        this.determineOrderSide(shortAverage, longAverage);
+    }
+
+    private determineOrderSide(shortAverage: number, longAverage: number) {
         if (shortAverage > longAverage && this.position !== OrderSide.buy) {
             this.position = OrderSide.buy;
 
@@ -41,11 +51,12 @@ export default class MovingAverageTrader extends Trader implements IStrategy {
             this.telegram.sendMessage({
                 message: `Sell signal triggered at ${shortAverage}`
             });
-        }  
+        } else {
+            this.position = OrderSide.hold;
+        }
     }
 
-    private calculateMovingAverage(candles: Ohlcv[], period: number): number {
-        const closePrices = candles.map((candle) => candle.close);
+    private calculateMovingAverage(closePrices: number[], period: number): number {
         const lastPeriodPrices = closePrices.slice(-period);
         const sum = lastPeriodPrices.reduce((total, price) => total + price, 0);
 
