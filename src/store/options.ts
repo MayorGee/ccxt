@@ -13,16 +13,22 @@ export const SWING_COMMAND_OPTIONS = {
                 {
                     text: '/showSwingEndPoints'
                 }
-            ],
+            ]
+        ]
+    }
+};
+
+export const ARBITRAGE_COMMAND_OPTIONS ={
+    reply_markup: {
+        'keyboard': [
             [
                 {
-                    text: '/orders'
-                },
+                    text: '/checkArbitrageOpportunity'
+                }
+            ],   
+            [
                 {
-                    text: '/balance'
-                },
-                {
-                    text: '/performance'
+                    text: '/emptyCommand'
                 }
             ]
         ]
@@ -67,16 +73,33 @@ export const STRATEGY_OPTIONS = {
         'keyboard': [
             [
                 {
-                    text: '/swing'
+                    text: '/breakout'
                 },
                 {
-                    text: '/movingAverage'
+                    text: '/marketMaker'
+                },
+                {
+                    text: '/momentum'
                 }
             ],
             [
                 {
-                    text: '/marketMaker'
+                    text: '/arbitrage'
                 },
+                {
+                    text: '/bollingerBands'
+                }
+            ],
+            [
+                {
+                    text: '/meanReversion'
+                },
+                {
+                    text: '/swing'
+                },
+                {
+                    text: '/movingAverage'
+                }                
             ]
         ]
     }

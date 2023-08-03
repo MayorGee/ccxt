@@ -45,3 +45,9 @@ export interface SwingLowHigh {
 export interface IStrategy {
     initTelegram(telegram: Telegram): void
 }
+
+export interface ExchangeRank {
+    exchangeName: string,
+    buySpread: number,
+    sellSpread: number
+}

@@ -20,7 +20,7 @@ export default class Binance extends Exchange {
     }
 
     public fetchOrderBook(symbol: string) {
-        return this.client.OrderBook(symbol);
+        return this.client.fetchOrderBook(symbol);
     }
 
     public async createLimitBuyOrder(symbol: string, orderSize: number, bidPrice: number) {
