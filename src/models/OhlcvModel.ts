@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import { OHLCV, binance } from 'ccxt';
 import { Ohlcv } from '../abstract/interfaces.js';
 import { config } from '../config/config.js';
@@ -8,8 +10,8 @@ export default class OhlcvModel {
     static client: binance = binanceClient;
     static market = `${config.assetTicker}/${config.baseTicker}`;  // BTC/USDT;
      
-    static async getData(): Promise<Ohlcv[] | undefined>  {
-        if(!this.client.hasFetchOHLCV) {
+    static async getData(market: string, timeFrame: string): Promise<Ohlcv[] | undefined>  {
+        if(!this.client.fetchOHLCV) {
             // Telegram.sendMessage({
             //     message: 'No OHLCV data for selected pair'
             // })
@@ -19,12 +21,12 @@ export default class OhlcvModel {
             return;
         }
 
-        const initialOhlcv = await this.client.fetchOHLCV(this.market, this.timeframe)
+        const initialOhlcv = await this.client.fetchOHLCV(market, timeFrame);
 
         return this.refactorOhlcv(initialOhlcv);      
     }
 
-    static  refactorOhlcv(ohlcv: OHLCV[]) {
+    static refactorOhlcv(ohlcv: OHLCV[]) {
         const [
             timestampIndex, 
             openIndex,  
@@ -49,7 +51,10 @@ export default class OhlcvModel {
     }
 
     static convertTimestamp(timestamp: number): string {
-        const dateTime = new Date(timestamp * 1000);
-        return dateTime.toString();
+        const utcDateTime = moment.utc(timestamp);
+        const utcPlus3DateTime = utcDateTime.add(3, 'hours');
+        const dateTime = utcPlus3DateTime.format('YYYY-MM-DD HH:mm:ss');
+    
+        return dateTime;
     }
 }

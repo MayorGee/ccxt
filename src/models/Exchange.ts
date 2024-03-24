@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-import { Balance, Balances } from 'ccxt';
 import { config } from '../config/config.js';
 
 export default class Exchange {
@@ -15,8 +14,6 @@ export default class Exchange {
     public allocation = Number(config.allocation);
     public tradePositionRange = Number(config.tradePositionRange);
     public market = `${config.assetTicker}/${config.baseTicker}`;  // BTC/USDT;
-
-    public async cancelAllOrders(): Promise<void> {}
 
     public async getMarketPrice(): Promise<number> {
         const averagePrices = await Promise.all([
@@ -34,23 +31,4 @@ export default class Exchange {
     protected getTakeProfitPrice(limitBuyPrice: number) {
         return limitBuyPrice + this.stopLoss
     }
-
-    public async getAssetBalance(): Promise<Balance> {
-        const balances: Balances = await this.client.fetchBalance();
-
-        return balances[this.assetTicker];
-    }
-
-    public getAllExchanges() {
-        
-    }
-
-    public async getBaseBalance(): Promise<Balance> {
-        const balances: Balances = await this.client.fetchBalance();
-
-        return balances[this.baseTicker];
-    }
-
-    public async getSellVolume(): Promise<any> {}
-    public async getBuyVolume(): Promise<any> {}
 }

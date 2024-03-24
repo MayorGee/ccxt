@@ -8,3 +8,9 @@ export enum OrderType {
     limit = 'limit',
     market = 'market'
 }
+
+export enum RSI {
+    overbought = 'overbought',
+    oversold = 'oversold',
+    normal = 'normal'
+}

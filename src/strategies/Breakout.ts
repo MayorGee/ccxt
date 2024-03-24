@@ -9,6 +9,8 @@ export default class Breakout implements IStrategy {
     private binance: Binance;
     private supportLevel = 0;
     private position = OrderSide.hold;
+    private symbol = 'DOT/USDT';
+    private timeFrame = '30m';
     private resistanceLevel = 0;
     private lookBackPeriod = 400;
 
@@ -41,7 +43,7 @@ export default class Breakout implements IStrategy {
     }
 
     private async triggerOrderSignal() {
-        const candles = await OhlcvModel.getData() as Ohlcv[];
+        const candles = await OhlcvModel.getData(this.symbol, this.timeFrame) as Ohlcv[];
         const closePrices = candles.map((candle) => candle.close);
 
         this.setSupportLevel(closePrices);

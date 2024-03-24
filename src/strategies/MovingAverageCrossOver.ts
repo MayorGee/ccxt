@@ -8,6 +8,8 @@ export default class MovingAverageCrossOver implements IStrategy {
     private longMovingAverage = 50;
     private position = OrderSide.hold;
     private telegram: Telegram;
+    private symbol = 'DOT/USDT';
+    private timeFrame = '30m';
     
     constructor(telegram: Telegram) {
         this.telegram = telegram;
@@ -28,7 +30,7 @@ export default class MovingAverageCrossOver implements IStrategy {
     }
 
     private async triggerOrderSignal() {
-        const candles = await OhlcvModel.getData() as Ohlcv[];
+        const candles = await OhlcvModel.getData(this.symbol, this.timeFrame) as Ohlcv[];
         const closePrices = candles.map((candle) => candle.close);
 
         const shortAverage = this.calculateMovingAverage(closePrices, this.shortMovingAverage);

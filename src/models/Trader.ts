@@ -3,7 +3,6 @@ import Telegram from './Telegram.js';
 import Binance from './Binance.js';
 import Indicator from './Indicator.js';
 import TelegramBot from 'node-telegram-bot-api';
-import { config } from '../config/config.js';
 
 import MarketMaking from '../strategies/MarketMaking.js';
 import MovingAverageCrossOver from '../strategies/MovingAverageCrossOver.js';
@@ -17,20 +16,18 @@ import Momentum from '../strategies/Momentum.js';
 import { 
     MOVING_AVERAGE_COMMAND_OPTIONS, 
     SWING_COMMAND_OPTIONS,
-    ARBITRAGE_COMMAND_OPTIONS
+    ARBITRAGE_COMMAND_OPTIONS,
+    BOLLINGER_COMMAND_OPTIONS
 } from '../store/options.js';
 
 
 export default class Trader {
     public telegram = new Telegram();
     public binance = new Binance(); 
-    protected indicator = new Indicator();
-    protected timeframe = config.timeFrame;
-
+    
     public initBot() {
         this.telegram.initBot();
         this.telegram.setOnText(/\/price (.+)/, this.showTickerPriceCommand.bind(this));
-        this.telegram.setOnText(/\/showRSI/, this.showRSI.bind(this));
 
         this.initAllStrategies();
     }
@@ -55,14 +52,6 @@ export default class Trader {
                 message: `Something went wrong. ${error.message}`
             }); 
         }
-    }
-
-    private async showRSI() {
-        const rsi = await this.indicator.getRSI();
-
-        this.telegram.sendMessage({
-            message: `Current RSI is ${rsi}`
-        });
     }
 
     private async getCurrencyPrice(ticker: string): Promise<string> {
@@ -121,7 +110,8 @@ export default class Trader {
             bollingerBands.initTelegram();
          
             this.telegram.sendMessage({ 
-                message: `Proceeding to Bollinger Bands Strategy!`
+                message: `Proceeding to Bollinger Bands Strategy!`,
+                basicOptions: BOLLINGER_COMMAND_OPTIONS
             });
         });
          

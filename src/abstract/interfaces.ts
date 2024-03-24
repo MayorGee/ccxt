@@ -17,8 +17,7 @@ export interface Ohlcv {
     high: number,
     low: number,
     close: number,
-    volume: number,
-    movingAverageDecision?: OrderSide.buy | OrderSide.sell
+    volume: number
 }
 
 export interface BuyPosition {

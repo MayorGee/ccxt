@@ -1,20 +1,20 @@
-import { OrderSide } from '../abstract/enum.js';
 import { BollingerBand, IStrategy, Ohlcv } from '../abstract/interfaces.js';
 import Binance from '../models/Binance.js';
 import OhlcvModel from '../models/OhlcvModel.js';
 import Telegram from '../models/Telegram.js';
 
-export default class MeanReversion implements IStrategy {
-    private period = 20;
-    private standardDeviation = 2;
-    private deviationThreshold = 0.02;
-    private position = OrderSide.hold;
+// incorrect take profit for long signal
+// incorrect short signal
+// unprecise rsi
+
+export default class BollingerBands implements IStrategy {
+    private bbPeriod = 20;
+    private rsiPeriod = 14;
+    private orderSize = 50;
     private telegram: Telegram;
     private binance: Binance;
-    private bollingerBands: BollingerBand = {
-        upperBand: 0,
-        lowerBand: 0
-    }
+    private symbol = 'DOT/USDT';
+    private timeFrame = '30m';
     
     constructor (
         telegram: Telegram, 
@@ -25,72 +25,180 @@ export default class MeanReversion implements IStrategy {
     }
 
     public async initTelegram () {     
-        this.telegram.setOnText(/\/findBollingerBandsEntry/, this.findEntryPoint.bind(this));
+        this.telegram.setOnText(/\/checkBollingerBandOpportunity/, this.checkBollingerBandOpportunity.bind(this));
     }
 
-    private findEntryPoint() {
+    private checkBollingerBandOpportunity() {
         try {
             this.telegram.sendMessage({
-                message: 'Searching For Bollinger Bands Entry Points...'
+                message: 'Searching...' 
             });
     
-            setInterval(async () => {
-                await this.triggerOrderSignal();
-            }, 2000);
+            // setInterval(async () => {
+                // await this.triggerOrderSignal();
+            // }, 4000);
+
+            this.triggerOrderSignal();
         } catch (error: any) {
-            this.telegram.sendMessage({
-                message: `Something went wrong. ${error.message}`
-            }); 
+            console.log('Something went wrong ', error.message);
         }
     }
 
     private async triggerOrderSignal() {
-        const candles = await OhlcvModel.getData() as Ohlcv[];
-        const closePrices = candles.map((candle) => candle.close);
+        const candles = await OhlcvModel.getData(this.symbol, this.timeFrame) as Ohlcv[];
+        const bollingerBands_4 = this.getBollingerBands(candles, 4);
+        const bollingerBands_2 = this.getBollingerBands(candles, 2);
+
+        const rsi =  this.calculateRSI(candles) as number[];
+
+        for (let i = 0; i < candles.length; i++) {
+            const { high, low } = candles[i];
+
+            const buyLowerBand = bollingerBands_4[i].lowerBand;
+            const buyUpperBand = bollingerBands_2[i].upperBand;
+
+            const sellLowerBand = bollingerBands_2[i].lowerBand;
+            const sellUpperBand = bollingerBands_4[i].upperBand;
+
+            const candleRsi = rsi[i];
+
+            const isSignalBuy = low <= buyLowerBand && candleRsi > 30;
+            const isSignalSell = high >= sellUpperBand && candleRsi < 70;
+
+                // console.group(i);
+                // console.log('upperBand: ', upperBand);
+                // console.log('close: ', close);
+                // console.log('lowerBand: ', lowerBand);
+                // console.log('rsi: ', candleRsi);
+                // console.groupEnd();
+                
+            if (isSignalBuy) {
+                this.telegram.sendMessage({
+                    message: `LONG SIGNAL \nTIME: ${candles[i].time} \nENTRY: ${low} \nTAKE PROFIT: ${buyUpperBand} \nRSI: ${candleRsi} \nUPPER_BAND: ${buyUpperBand} \nLOWER_BAND: ${buyLowerBand}`
+                });
+
+                //     const order = this.binance.createOrder(
+                //         this.symbol,
+                //         OrderType.limit,
+                //         OrderSide.buy',
+                //         this.orderSize,
+                //         close,
+                //         {
+                //             'takeProfit': {
+                //                 'price': upperBand
+                //             }
+                //         }
+                //     )
+                // }
+            } 
+            
+            if (isSignalSell) {
+                this.telegram.sendMessage({
+                    message: `SHORT SIGNAL \nTIME: ${candles[i].time} \nENTRY: ${high} \nTAKE PROFIT: ${sellLowerBand} \nRSI: ${candleRsi} \nUPPER_BAND: ${sellUpperBand} \nLOWER_BAND: ${sellLowerBand}`
+                });
+            }            
+        } 
+    }
+
+    private getBollingerBands(candles: Ohlcv[], standardDeviation: number) {
+        const bollingerBands: BollingerBand[] = [];
+
+        for (let i = 0; i < candles.length; i++) {
+            const close = candles[i].close;
+            const deviation = standardDeviation * this.calculateStandardDeviation(candles);
         
-        this.calculateBollingerBands(closePrices);
+            bollingerBands.push({
+                upperBand: close + deviation,
+                lowerBand: close - deviation
+            });
+        }
 
-        // generate buy/sell signals based on the price position relative to the bands
-        this.determineOrderSide(closePrices);
+        return bollingerBands;
     }
 
-    private calculateBollingerBands(closePrices: number[]) {
-        const middleBand = this.calculateSimpleMovingAverage(closePrices);
-
-        const squaredDiferrences = closePrices.map((closePrice) => Math.pow(closePrice - middleBand, 2));
-        const meanSquaredDifference = this.calculateSimpleMovingAverage(squaredDiferrences);
-        const standardDeviation = Math.sqrt(meanSquaredDifference);
-
-        this.bollingerBands.upperBand = middleBand + (this.standardDeviation * standardDeviation);
-        this.bollingerBands.lowerBand = middleBand - (this.standardDeviation * standardDeviation);
+    private calculateStandardDeviation(candles: Ohlcv[]): number {
+        if (candles.length < this.bbPeriod) {
+            throw new Error('Length exceeds the number of candles available');
+        }
+        
+        const subset = candles.slice(candles.length - this.bbPeriod, candles.length);
+        const closes = subset.map(candle => candle.close);
+        const mean = closes.reduce((sum, value) => sum + value, 0) / this.bbPeriod;
+        const squaredDifferences = closes.map(value => Math.pow(value - mean, 2));
+        const variance = squaredDifferences.reduce((sum, value) => sum + value, 0) / this.bbPeriod;
+        const standardDeviation = Math.sqrt(variance);
+        
+        return standardDeviation;
     }
 
-    private calculateSimpleMovingAverage(closePrices: number[]) {
-        const lastPeriodPrices = closePrices.slice(-this.period);
-        const sum = lastPeriodPrices.reduce((total, price) => total + price, 0);
+    private calculateRSI(candles: Ohlcv[]): number[] {
+        const { averageGain, averageLoss } = this.getAverageGainLoss(candles);  
+        const relativeStrengths = this.getRelativeStrength(candles, averageGain, averageLoss);   
 
-        return sum / this.period;
+        const rsi: number[] = relativeStrengths.map((relativeStrength) => 100 - 100 / (1 + relativeStrength));
+
+        while (rsi.length < candles.length) {
+            rsi.unshift(0);
+        }
+
+        return rsi;
     }
 
-    private determineOrderSide(closePrices: number[]) {
-        const { upperBand, lowerBand } = this.bollingerBands;
+    private getRelativeStrength(candles: Ohlcv[], averageGain: number, averageLoss: number) {
+        const relativeStrengths: number[] = [];
+        relativeStrengths.push(averageGain / averageLoss);
 
-        closePrices.forEach((closePrice) => {
-            if (closePrice > upperBand + this.deviationThreshold) {
-                this.position = OrderSide.sell;
+        for (let i = this.rsiPeriod; i < candles.length - 1; i++) {
+            const currentCandle = candles[i];
+            const previousCandle = candles[i - 1];
 
-                this.telegram.sendMessage({
-                    message: `Sell signal found at ${closePrice}`
-                });
-            } else if (closePrice < lowerBand - this.deviationThreshold) {
-                this.position = OrderSide.buy;
+            const priceChange = currentCandle.close - previousCandle.close;
 
-                this.telegram.sendMessage({
-                    message: `Buy signal found at ${closePrice}`
-                });
+            const gain = priceChange > 0 ? priceChange : 0;
+            const loss = priceChange < 0 ? -priceChange : 0;
+
+            const smoothedAverageGain = (averageGain * (this.rsiPeriod - 1) + gain) / this.rsiPeriod;
+            const smoothedAverageLoss = (averageLoss * (this.rsiPeriod - 1) + loss) / this.rsiPeriod;
+
+            averageGain = smoothedAverageGain;
+            averageLoss = smoothedAverageLoss;
+
+            const relativeStrength = smoothedAverageGain / smoothedAverageLoss;
+            relativeStrengths.push(relativeStrength);
+        }
+
+        return relativeStrengths;
+    }
+
+    private getAverageGainLoss(candles: Ohlcv[]) {
+        const gains: number[] = [];
+        const losses: number[] = [];
+
+        for (let i = 1; i < candles.length; i++) {
+            const currentCandle = candles[i];
+            const previousCandle = candles[i - 1];
+
+            const priceChange = currentCandle.close - previousCandle.close;
+
+            if (priceChange > 0) {
+                gains.push(priceChange);
+                losses.push(0);
             } else {
-                this.position = OrderSide.hold;
+                gains.push(0);
+                losses.push(-priceChange);
             }
-        });
+        }
+
+        let averageGain = this.calculateAverage(gains.slice(0, this.rsiPeriod));
+        let averageLoss = this.calculateAverage(losses.slice(0, this.rsiPeriod));
+
+        return { averageGain, averageLoss };
     }
+
+    private calculateAverage(values: number[]): number {
+        const sum = values.reduce((acc, value) => acc + value, 0);
+    
+        return sum / values.length;
+    }
+
 }

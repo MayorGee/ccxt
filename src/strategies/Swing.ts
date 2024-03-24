@@ -8,6 +8,8 @@ export default class Swing implements IStrategy {
     static candlesLength = 500;
     private telegram: Telegram;
     private binance: Binance;
+    private symbol = 'DOT/USDT';
+    private timeFrame = '30m';
     
     constructor (
         telegram: Telegram, 
@@ -44,7 +46,7 @@ export default class Swing implements IStrategy {
     }
 
     public async prepareSwingExtremes(subsetSize: number = 5) {
-        const ohlcv = await OhlcvModel.getData() as Ohlcv[];     
+        const ohlcv = await OhlcvModel.getData(this.symbol, this.timeFrame) as Ohlcv[];     
         const swingExtremes = this.getSwingEndpoints(ohlcv, subsetSize);    
 
         this.setSwingExtremes(swingExtremes);

@@ -10,6 +10,8 @@ export default class MeanReversion implements IStrategy {
     private threshold = 0.02;
     private telegram: Telegram;
     private binance: Binance;
+    private symbol = 'DOT/USDT';
+    private timeFrame = '30m';
     
     constructor (
         telegram: Telegram, 
@@ -40,7 +42,7 @@ export default class MeanReversion implements IStrategy {
     }
 
     private async triggerOrderSignal() {
-        const candles = await OhlcvModel.getData() as Ohlcv[];
+        const candles = await OhlcvModel.getData(this.symbol, this.timeFrame) as Ohlcv[];
         const closePrices = candles.map((candle) => candle.close);
         const meanPrice = this.calculateMeanPrice(closePrices, this.lookBackPeriod);
 

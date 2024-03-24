@@ -35,6 +35,23 @@ export const ARBITRAGE_COMMAND_OPTIONS ={
     }
 };
 
+export const BOLLINGER_COMMAND_OPTIONS = {
+    reply_markup: {
+        'keyboard': [
+            [
+                {
+                    text: '/checkBollingerBandOpportunity'
+                }
+            ],   
+            [
+                {
+                    text: '/emptyCommand'
+                }
+            ]
+        ]
+    }
+};
+
 export const MOVING_AVERAGE_COMMAND_OPTIONS = {
     reply_markup: {
         'keyboard': [
@@ -58,11 +75,6 @@ export const START_COMMAND_OPTIONS = {
                     text: '/chooseStrategy'
                 
                 }
-            ],
-            [
-                {
-                    text: '/showRSI'
-                },
             ]
         ]
     }
